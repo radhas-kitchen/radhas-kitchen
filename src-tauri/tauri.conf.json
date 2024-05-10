@@ -1,0 +1,26 @@
+{
+	"productName": "Radhas Kitchen",
+	"version": "0.0.0",
+	"identifier": "org.radhaskitchen.mobile",
+	"build": {
+		"beforeDevCommand": "bun run next:dev",
+		"devUrl": "http://localhost:3000",
+		"beforeBuildCommand": "bun run next:build",
+		"frontendDist": "../out"
+	},
+	"app": {
+		"windows": [
+			{
+				"title": "Radha's Kitchen",
+				"fullscreen": true
+			}
+		],
+		"security": {
+			"csp": null
+		}
+	},
+	"bundle": {
+		"active": true,
+		"targets": "all"
+	}
+}
