@@ -1,4 +1,6 @@
-// import { internalIpV4 } from 'internal-ip';
+import { internalIpV4 } from 'internal-ip';
+
+const prod = process.env.NODE_ENV === 'production';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -6,7 +8,7 @@ const nextConfig = {
 	images: {
 		unoptimized: true,
 	},
-	assetPrefix: 'https://56fd-66-109-53-198.ngrok-free.app',
+	assetPrefix: prod ? `http://${'192.168.1.94'}:3000/` : undefined,
 };
 
 export default nextConfig;

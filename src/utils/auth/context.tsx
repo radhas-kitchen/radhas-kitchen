@@ -1,12 +1,12 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { Token } from '.';
+import { UserData } from '../reapi/user';
 import { useRouter } from 'next/navigation';
 
 export interface Auth {
-	token: Token | undefined;
-	setToken: (token: Token) => void;
+	token: UserData | undefined;
+	setToken: (token: UserData) => void;
 	loading: boolean;
 }
 
@@ -17,7 +17,7 @@ export interface AuthProviderProps {
 const AuthContext = createContext(undefined as Auth | undefined);
 
 export function AuthProvider({ children }: AuthProviderProps) {
-	const [token, setToken] = useState<Token | undefined>(undefined);
+	const [token, setToken] = useState<UserData | undefined>(undefined);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	);
 }
 
-export function ensureToken(auth: Auth): Token | undefined {
+export function ensureToken(auth: Auth): UserData | undefined {
 	if (auth.loading) return undefined;
 	if (!auth.token) return useRouter().push('/login') as never;
 	if (auth.token.expires < new Date()) return useRouter().push('/login') as never;
