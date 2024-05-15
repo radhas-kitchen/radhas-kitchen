@@ -1,0 +1,49 @@
+syntax = "proto3";
+package rkapi.jobs;
+
+import "google/protobuf/empty.proto";
+
+service Jobs {
+  rpc Post(PostRequest) returns (JobId);
+  rpc Pickup(PickupRequest) returns (google.protobuf.Empty);
+  rpc Dropoff(JobId) returns (google.protobuf.Empty);
+  rpc Confirm(JobId) returns (google.protobuf.Empty);
+  rpc Cancel(JobId) returns (google.protobuf.Empty);
+  rpc Jobs(google.protobuf.Empty) returns (stream Job);
+  rpc Get(JobId) returns (Job);
+}
+
+enum JobStatus {
+  Pending = 0;
+  PickedUp = 1;
+  DroppedOff = 2;
+  Confirmed = 3;
+  Cancelled = 4;
+}
+
+message Job {
+  string job_id = 1;
+  string provider_id = 2;
+  string pickup_location = 3;
+  string dropoff_location = 4;
+  bool cancelled = 5;
+
+  optional string driver_id = 6;
+  optional string pickup_time = 7;
+  optional string dropoff_time = 8;
+  optional string confirm_time = 9;
+
+  JobStatus status = 10;
+}
+
+message PostRequest {
+  string provider_id = 1;
+  string location = 2;
+}
+
+message PickupRequest {
+  string job_id = 1;
+  string driver_id = 2;
+}
+
+message JobId { string job_id = 1; }
