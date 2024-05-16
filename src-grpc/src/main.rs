@@ -12,6 +12,7 @@ extern crate tokio;
 extern crate tonic;
 
 mod error;
+mod model;
 mod prelude;
 mod proto;
 mod services;

@@ -23,12 +23,14 @@ enum JobStatus {
 
 message Job {
   string job_id = 1;
-  string provider_id = 2;
-  string pickup_location = 3;
-  string dropoff_location = 4;
-  bool cancelled = 5;
 
-  optional string driver_id = 6;
+  string provider_id = 2;
+  string consumer_id = 3;
+  optional string driver_id = 4;
+
+  string pickup_location = 5;
+  string dropoff_location = 6;
+
   optional string pickup_time = 7;
   optional string dropoff_time = 8;
   optional string confirm_time = 9;
