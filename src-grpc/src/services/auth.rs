@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use time::OffsetDateTime;
 
 use crate::prelude::*;
@@ -73,14 +75,84 @@ impl Auth for AuthService {
         }))
     }
 
-    async fn create_user(&self, request: Request<CreateUserRequest>) -> Result<Empty, Status> {
-        unimplemented!()
+    async fn create_user(
+        &self,
+        request: Request<CreateUserRequest>,
+    ) -> Result<Response<Empty>, Status> {
+        let CreateUserRequest {
+            email,
+            password,
+            name,
+            kind,
+        } = request.into_inner();
+
+        let kind = UserKind::from(UserKindResponse::try_from(kind).unwrap());
+
+        let user = sqlx::query!(
+            r#"insert into users (email, password, name, kind) values ($1, $2, $3, $4) returning id"#,
+            email,
+            password,
+            name,
+            kind as UserKind
+        )
+        .fetch_one(&self.pool)
+        .await
+        .map_err(|err| {
+            match err {
+                sqlx::Error::Database(edb) if edb.code() == Some(Cow::Borrowed("23505")) => {
+                    Status::already_exists("User already exists")
+                }
+                _ => {
+                    error!("Failed to create user: {}", err);
+                    Status::internal("Failed to create user")
+                }
+            }
+        })?;
+
+        log::info!("User {} created", user.id);
+
+        Ok(Response::new(Empty::default()))
     }
 
     async fn update_password(
         &self,
         request: Request<UpdatePasswordRequest>,
-    ) -> Result<Empty, Status> {
-        unimplemented!()
+    ) -> Result<Response<Empty>, Status> {
+        let UpdatePasswordRequest { user_id, old, new } = request.into_inner();
+
+        let user = sqlx::query!(r#"select password, salt from users where id = $1"#, user_id)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(|err| {
+                error!("Failed to fetch user: {}", err);
+                Status::internal("Failed to fetch user")
+            })?;
+
+        let Some(user) = user else {
+            return Err(Status::not_found("User not found"));
+        };
+
+        let old = sha256::digest(format!("{}{}", old, user.salt));
+        let new = sha256::digest(format!("{}{}", new, user.salt));
+
+        if old != user.password {
+            return Err(Status::unauthenticated("Invalid password"));
+        }
+
+        sqlx::query!(
+            r#"update users set password = $1 where id = $2"#,
+            new,
+            user_id
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|err| {
+            error!("Failed to update password: {}", err);
+            Status::internal("Failed to update password")
+        })?;
+
+        log::info!("User {} updated password", user_id);
+
+        Ok(Response::new(Empty::default()))
     }
 }

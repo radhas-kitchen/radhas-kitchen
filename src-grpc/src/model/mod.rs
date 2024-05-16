@@ -17,3 +17,13 @@ impl From<UserKind> for UserKindResponse {
         }
     }
 }
+
+impl From<UserKindResponse> for UserKind {
+    fn from(kind: UserKindResponse) -> Self {
+        match kind {
+            UserKindResponse::Driver => UserKind::Driver,
+            UserKindResponse::Provider => UserKind::Restaurant,
+            UserKindResponse::Consumer => UserKind::Farm,
+        }
+    }
+}
