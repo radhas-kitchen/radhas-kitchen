@@ -1,12 +1,19 @@
-use std::borrow::Cow;
-
-use time::OffsetDateTime;
-
 use crate::prelude::*;
+use std::{borrow::Cow, sync::Arc};
 
 #[derive(Debug)]
 pub struct AuthService {
-    pool: Pool<Postgres>,
+    pool: Arc<Pool<Postgres>>,
+}
+
+impl AuthService {
+    pub fn new(pool: Arc<Pool<Postgres>>) -> Self {
+        Self { pool }
+    }
+
+    fn pool_ref(&self) -> &Pool<Postgres> {
+        &self.pool
+    }
 }
 
 #[tonic::async_trait]
@@ -20,7 +27,7 @@ impl Auth for AuthService {
             r#"select id, password, salt, kind as "kind!: UserKind" from users where email = $1"#,
             request.email
         )
-        .fetch_optional(&self.pool)
+        .fetch_optional(self.pool_ref())
         .await
         .map_err(|err| {
             error!("Failed to fetch user: {}", err);
@@ -42,7 +49,7 @@ impl Auth for AuthService {
             user.id
         )
         .map(|row| (row.token, row.expires))
-        .fetch_optional(&self.pool)
+        .fetch_optional(self.pool_ref())
         .await
         .map_err(|err| {
             error!("Failed to fetch tokens: {}", err);
@@ -57,7 +64,7 @@ impl Auth for AuthService {
                 user.id,
             )
             .map(|row| (row.token, row.expires))
-            .fetch_one(&self.pool)
+            .fetch_one(self.pool_ref())
             .await
             .map_err(|err| {
                 error!("Failed to create token: {}", err);
@@ -95,7 +102,7 @@ impl Auth for AuthService {
             name,
             kind as UserKind
         )
-        .fetch_one(&self.pool)
+        .fetch_one(self.pool_ref())
         .await
         .map_err(|err| {
             match err {
@@ -121,7 +128,7 @@ impl Auth for AuthService {
         let UpdatePasswordRequest { user_id, old, new } = request.into_inner();
 
         let user = sqlx::query!(r#"select password, salt from users where id = $1"#, user_id)
-            .fetch_optional(&self.pool)
+            .fetch_optional(self.pool_ref())
             .await
             .map_err(|err| {
                 error!("Failed to fetch user: {}", err);
@@ -144,7 +151,7 @@ impl Auth for AuthService {
             new,
             user_id
         )
-        .execute(&self.pool)
+        .execute(self.pool_ref())
         .await
         .map_err(|err| {
             error!("Failed to update password: {}", err);

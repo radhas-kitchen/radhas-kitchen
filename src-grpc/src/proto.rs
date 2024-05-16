@@ -1,6 +1,7 @@
-tonic::include_proto!("rkapi.jobs");
-tonic::include_proto!("rkapi.auth");
-tonic::include_proto!("google.protobuf");
+#![allow(unused_imports)]
 
-pub use auth_server::*;
-pub use jobs_server::*;
+tonic::include_proto!("proto");
+
+pub use google::protobuf::*;
+pub use rkapi::auth::{auth_server::*, *};
+pub use rkapi::jobs::{jobs_server::*, *};

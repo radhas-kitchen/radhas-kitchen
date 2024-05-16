@@ -10,10 +10,10 @@ pub enum StartError {
         location: &'static Location<'static>,
     },
 
-    #[error("IO error: {error}")]
-    IoError {
+    #[error("Server error: {error}")]
+    ServerError {
         #[from]
-        error: std::io::Error,
+        error: tonic::transport::Error,
         #[location]
         location: &'static Location<'static>,
     },
