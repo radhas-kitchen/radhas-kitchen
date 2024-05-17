@@ -6,37 +6,33 @@ import "auth.proto";
 
 service Jobs {
   rpc Post(rkapi.auth.Authorization) returns (google.protobuf.Empty);
+  rpc Claim(JobUpdateRequest) returns (google.protobuf.Empty);
+  rpc Unclaim(JobUpdateRequest) returns (google.protobuf.Empty);
   rpc Pickup(JobUpdateRequest) returns (google.protobuf.Empty);
   rpc Dropoff(JobUpdateRequest) returns (google.protobuf.Empty);
-  rpc Confirm(JobUpdateRequest) returns (google.protobuf.Empty);
   rpc Cancel(JobUpdateRequest) returns (google.protobuf.Empty);
   rpc Jobs(google.protobuf.Empty) returns (stream Job);
   rpc Get(JobId) returns (Job);
 }
 
 enum JobStatus {
-  Pending = 0;
-  PickedUp = 1;
-  DroppedOff = 2;
-  Confirmed = 3;
+  Created = 0;
+  Claimed = 1;
+  PickedUp = 2;
+  DroppedOff = 3;
   Cancelled = 4;
 }
 
 message Job {
-  string job_id = 1;
+  string id = 1;
 
-  string provider_id = 2;
-  string consumer_id = 3;
-  optional string driver_id = 4;
+  string created = 2;
+  optional string claimed = 3;
+  optional string pickedup = 4;
+  optional string droppedoff = 5;
+  optional string cancelled = 6;
 
-  string pickup_location = 5;
-  string dropoff_location = 6;
-
-  optional string pickup_time = 7;
-  optional string dropoff_time = 8;
-  optional string confirm_time = 9;
-
-  JobStatus status = 10;
+  JobStatus status = 7;
 }
 
 message JobId { string job_id = 1; }

@@ -35,12 +35,14 @@ impl Auth for AuthService {
         })?;
 
         let Some(user) = user else {
+            error!("User not found");
             return Err(Status::not_found("User not found"));
         };
 
         let password = sha256::digest(format!("{}{}", request.password, user.salt));
 
         if password != user.password {
+            error!("Invalid password for user {}", user.id);
             return Err(Status::unauthenticated("Invalid password"));
         }
 
@@ -100,7 +102,7 @@ impl Auth for AuthService {
         };
 
         let user = sqlx::query!(
-            r#"insert into users (email, password, name, kind) values ($1, $2, $3, $4) returning id"#,
+            r#"insert into users (email, password, name, kind) values ($1, $2, $3, ($4::text)::userkind) returning id"#,
             email,
             password,
             name,
@@ -112,6 +114,7 @@ impl Auth for AuthService {
         .map_err(|err| {
             match err {
                 sqlx::Error::Database(edb) if edb.code() == Some(Cow::Borrowed("23505")) => {
+                    error!("User already exists");
                     Status::already_exists("User already exists")
                 }
                 _ => {
@@ -171,6 +174,7 @@ impl Auth for AuthService {
             })?;
 
         let Some(user) = user else {
+            error!("User {} not found", user_id);
             return Err(Status::not_found("User not found"));
         };
 
@@ -178,6 +182,7 @@ impl Auth for AuthService {
         let new = sha256::digest(format!("{}{}", new, user.salt));
 
         if old != user.password {
+            error!("Invalid password for user {}", user_id);
             return Err(Status::unauthenticated("Invalid password"));
         }
 

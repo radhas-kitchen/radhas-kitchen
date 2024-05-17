@@ -2,44 +2,62 @@ use crate::prelude::*;
 
 #[derive(sqlx::Type, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[sqlx(type_name = "UserKind")]
-#[repr(i32)]
 pub enum UserKind {
-    Provider = 0,
-    Driver = 1,
-    Consumer = 2,
+    Provider,
+    Driver,
+    Consumer,
 }
 
 impl From<UserKind> for UserKindResponse {
     fn from(kind: UserKind) -> Self {
-        unsafe { std::mem::transmute(kind) }
+        match kind {
+            UserKind::Provider => UserKindResponse::Provider,
+            UserKind::Driver => UserKindResponse::Driver,
+            UserKind::Consumer => UserKindResponse::Consumer,
+        }
     }
 }
 
 impl From<UserKindResponse> for UserKind {
     fn from(kind: UserKindResponse) -> Self {
-        unsafe { std::mem::transmute(kind) }
+        match kind {
+            UserKindResponse::Provider => UserKind::Provider,
+            UserKindResponse::Driver => UserKind::Driver,
+            UserKindResponse::Consumer => UserKind::Consumer,
+        }
     }
 }
 
 #[derive(sqlx::Type, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[sqlx(type_name = "JobStatus")]
-#[repr(i32)]
 pub enum JobStatus {
-    Pending = 0,
-    PickedUp = 1,
-    DroppedOff = 2,
-    Confirmed = 3,
-    Cancelled = 4,
+    Created,
+    Claimed,
+    PickedUp,
+    DroppedOff,
+    Cancelled,
 }
 
 impl From<JobStatus> for JobStatusResponse {
     fn from(status: JobStatus) -> Self {
-        unsafe { std::mem::transmute(status) }
+        match status {
+            JobStatus::Created => JobStatusResponse::Created,
+            JobStatus::Claimed => JobStatusResponse::Claimed,
+            JobStatus::PickedUp => JobStatusResponse::PickedUp,
+            JobStatus::DroppedOff => JobStatusResponse::DroppedOff,
+            JobStatus::Cancelled => JobStatusResponse::Cancelled,
+        }
     }
 }
 
 impl From<JobStatusResponse> for JobStatus {
     fn from(status: JobStatusResponse) -> Self {
-        unsafe { std::mem::transmute(status) }
+        match status {
+            JobStatusResponse::Created => JobStatus::Created,
+            JobStatusResponse::Claimed => JobStatus::Claimed,
+            JobStatusResponse::PickedUp => JobStatus::PickedUp,
+            JobStatusResponse::DroppedOff => JobStatus::DroppedOff,
+            JobStatusResponse::Cancelled => JobStatus::Cancelled,
+        }
     }
 }

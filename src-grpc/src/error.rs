@@ -17,4 +17,12 @@ pub enum StartError {
         #[location]
         location: &'static Location<'static>,
     },
+
+    #[error("Reflection error: {error}")]
+    ReflectionError {
+        #[from]
+        error: tonic_reflection::server::Error,
+        #[location]
+        location: &'static Location<'static>,
+    },
 }
