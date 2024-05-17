@@ -90,10 +90,14 @@ impl Auth for AuthService {
             email,
             password,
             name,
-            kind,
+            kind: kind_data,
         } = request.into_inner();
 
-        let kind = UserKind::from(UserKindResponse::try_from(kind).unwrap());
+        let kind = match &kind_data {
+            Some(Kind::Consumer(_)) => UserKind::Consumer,
+            Some(Kind::Provider(_)) => UserKind::Provider,
+            None => UserKind::Driver,
+        };
 
         let user = sqlx::query!(
             r#"insert into users (email, password, name, kind) values ($1, $2, $3, $4) returning id"#,
@@ -102,6 +106,7 @@ impl Auth for AuthService {
             name,
             kind as UserKind
         )
+        .map(|row| row.id)
         .fetch_one(self.pool_ref())
         .await
         .map_err(|err| {
@@ -116,7 +121,37 @@ impl Auth for AuthService {
             }
         })?;
 
-        log::info!("User {} created", user.id);
+        match kind_data {
+            Some(Kind::Consumer(DataUserConsumer { location })) => {
+                sqlx::query!(
+                    r#"insert into consumers (id, location) values ($1, $2)"#,
+                    user,
+                    location
+                )
+                .execute(self.pool_ref())
+                .await
+                .map_err(|err| {
+                    error!("Failed to create consumer: {}", err);
+                    Status::internal("Failed to create consumer")
+                })?;
+            }
+            Some(Kind::Provider(DataUserProvider { location })) => {
+                sqlx::query!(
+                    r#"insert into providers (id, location) values ($1, $2)"#,
+                    user,
+                    location
+                )
+                .execute(self.pool_ref())
+                .await
+                .map_err(|err| {
+                    error!("Failed to create provider: {}", err);
+                    Status::internal("Failed to create provider")
+                })?;
+            }
+            None => {}
+        }
+
+        log::info!("User {} created as {:?}", user, kind);
 
         Ok(Response::new(Empty::default()))
     }

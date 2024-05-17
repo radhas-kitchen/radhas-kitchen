@@ -2,13 +2,14 @@ syntax = "proto3";
 package rkapi.jobs;
 
 import "google/protobuf/empty.proto";
+import "auth.proto";
 
 service Jobs {
-  rpc Post(PostRequest) returns (JobId);
-  rpc Pickup(PickupRequest) returns (google.protobuf.Empty);
-  rpc Dropoff(JobId) returns (google.protobuf.Empty);
-  rpc Confirm(JobId) returns (google.protobuf.Empty);
-  rpc Cancel(JobId) returns (google.protobuf.Empty);
+  rpc Post(rkapi.auth.Authorization) returns (google.protobuf.Empty);
+  rpc Pickup(JobUpdateRequest) returns (google.protobuf.Empty);
+  rpc Dropoff(JobUpdateRequest) returns (google.protobuf.Empty);
+  rpc Confirm(JobUpdateRequest) returns (google.protobuf.Empty);
+  rpc Cancel(JobUpdateRequest) returns (google.protobuf.Empty);
   rpc Jobs(google.protobuf.Empty) returns (stream Job);
   rpc Get(JobId) returns (Job);
 }
@@ -38,14 +39,9 @@ message Job {
   JobStatus status = 10;
 }
 
-message PostRequest {
-  string provider_id = 1;
-  string location = 2;
-}
-
-message PickupRequest {
-  string job_id = 1;
-  string driver_id = 2;
-}
-
 message JobId { string job_id = 1; }
+
+message JobUpdateRequest {
+  string job_id = 1;
+  rkapi.auth.Authorization auth = 2;
+}
