@@ -1,0 +1,43 @@
+syntax = "proto3";
+package rkapi.jobs;
+
+import "google/protobuf/empty.proto";
+import "auth.proto";
+
+service Jobs {
+  rpc Post(rkapi.auth.Authorization) returns (google.protobuf.Empty);
+  rpc Claim(JobUpdateRequest) returns (google.protobuf.Empty);
+  rpc Unclaim(JobUpdateRequest) returns (google.protobuf.Empty);
+  rpc Pickup(JobUpdateRequest) returns (google.protobuf.Empty);
+  rpc Dropoff(JobUpdateRequest) returns (google.protobuf.Empty);
+  rpc Cancel(JobUpdateRequest) returns (google.protobuf.Empty);
+  rpc Jobs(google.protobuf.Empty) returns (stream Job);
+  rpc Get(JobId) returns (Job);
+}
+
+enum JobStatus {
+  Created = 0;
+  Claimed = 1;
+  PickedUp = 2;
+  DroppedOff = 3;
+  Cancelled = 4;
+}
+
+message Job {
+  string id = 1;
+
+  string created = 2;
+  optional string claimed = 3;
+  optional string pickedup = 4;
+  optional string droppedoff = 5;
+  optional string cancelled = 6;
+
+  JobStatus status = 7;
+}
+
+message JobId { string job_id = 1; }
+
+message JobUpdateRequest {
+  string job_id = 1;
+  rkapi.auth.Authorization auth = 2;
+}

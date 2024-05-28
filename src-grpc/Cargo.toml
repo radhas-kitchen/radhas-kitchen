@@ -1,0 +1,31 @@
+[package]
+name = "rk-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cuid2 = "0.1.2"
+dotenvy = "0.15.7"
+dotenvy_macro = "0.15.7"
+log = { version = "0.4.21", features = ["std"] }
+serde = { version = "1.0.201", features = ["derive"] }
+serde_json = "1.0.117"
+sha256 = "1.5.0"
+sqlx = { version = "0.7.4", features = [
+	"runtime-tokio",
+	"tls-native-tls",
+	"postgres",
+	"time",
+] }
+thiserror = { git = "https://github.com/onlycs/thiserror", version = "1.0.58" }
+tonic = "0.11"
+prost = "0.12"
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+time = { version = "0.3.36", features = ["serde"] }
+tokio-stream = "0.1.15"
+rand = "0.8.5"
+tonic-reflection = "0.11.0"
+skuld = { path = "../../asgard/crates/skuld" }
+
+[build-dependencies]
+tonic-build = "0.11"

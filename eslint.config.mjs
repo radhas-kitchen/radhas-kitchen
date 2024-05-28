@@ -34,11 +34,10 @@ export default tseslint.config(
 	},
 	{
 		files: ['**/*.ts', '**/*.tsx'],
+		ignores: ['src/protogen/**/*.ts'],
 		languageOptions: {
 			parser: tsparser,
-			parserOptions: {
-				project: ['./tsconfig.json'],
-			},
+			parserOptions: { project: ['./tsconfig.json'] },
 		},
 		plugins: { '@stylistic': stylistic },
 		rules: {
@@ -62,9 +61,7 @@ export default tseslint.config(
 			'@stylistic/indent': [
 				'warn',
 				'tab',
-				{
-					SwitchCase: 1,
-				},
+				{ SwitchCase: 1 },
 			],
 			'@stylistic/indent-binary-ops': 'warn',
 			'@stylistic/implicit-arrow-linebreak': 'warn',
@@ -167,6 +164,8 @@ export default tseslint.config(
 			'@typescript-eslint/restrict-template-expressions': 'off',
 			'@typescript-eslint/no-empty-function': 'off',
 			'@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+			'@typescript-eslint/no-misused-promises': 'off',
+			'@typescript-eslint/no-redundant-type-constituents': 'off',
 		},
 	},
 );

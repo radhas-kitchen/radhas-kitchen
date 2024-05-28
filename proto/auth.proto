@@ -1,0 +1,52 @@
+syntax = "proto3";
+package rkapi.auth;
+
+import "google/protobuf/empty.proto";
+
+enum UserKind {
+  Provider = 0;
+  Driver = 1;
+  Consumer = 2;
+}
+
+service Auth {
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc CreateUser(CreateUserRequest) returns (google.protobuf.Empty);
+  rpc UpdatePassword(UpdatePasswordRequest) returns (google.protobuf.Empty);
+}
+
+message Authorization {
+  string user_id = 1;
+  string token = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string token = 1;
+  string expires = 2;
+  string user_id = 3;
+  UserKind kind = 4;
+}
+
+message DataUserProvider { string location = 1; }
+message DataUserConsumer { string location = 1; }
+message CreateUserRequest {
+  string email = 1;
+  string password = 2;
+  string name = 3;
+
+  oneof kind {
+    DataUserProvider provider = 4;
+    DataUserConsumer consumer = 6;
+  }
+}
+
+message UpdatePasswordRequest {
+  string user_id = 1;
+  string old = 2;
+  string new = 3;
+}

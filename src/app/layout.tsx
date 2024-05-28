@@ -8,7 +8,7 @@ export interface PageProps {
 }
 
 export default function RootLayout({ children }: PageProps) {
-	// if (typeof window != 'undefined') getCurrent().setZoom(1.0).catch(console.error);
+	if (typeof window != 'undefined') getCurrent().setZoom(1.0).catch(console.error);
 
 	return (
 		<html className='w-full h-full' suppressHydrationWarning>
