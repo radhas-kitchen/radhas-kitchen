@@ -101,14 +101,14 @@ impl Auth for AuthService {
             None => UserKind::Driver,
         };
 
-        let user = sqlx::query!(
-            r#"insert into users (email, password, name, kind) values ($1, $2, $3, ($4::text)::userkind) returning id"#,
+        let (user, salt) = sqlx::query!(
+            r#"insert into users (email, password, name, kind) values ($1, $2, $3, ($4::text)::userkind) returning id, salt"#,
             email,
-            password,
+            "__placeholder",
             name,
             kind as UserKind
         )
-        .map(|row| row.id)
+        .map(|row| (row.id, row.salt))
         .fetch_one(self.pool_ref())
         .await
         .map_err(|err| {
@@ -122,6 +122,20 @@ impl Auth for AuthService {
                     Status::internal("Failed to create user")
                 }
             }
+        })?;
+
+        let password = sha256::digest(format!("{}{}", password, salt));
+
+        sqlx::query!(
+            r#"update users set password = $1 where id = $2"#,
+            password,
+            user
+        )
+        .execute(self.pool_ref())
+        .await
+        .map_err(|err| {
+            error!("Failed to update password: {}", err);
+            Status::internal("Failed to update password")
         })?;
 
         match kind_data {
@@ -151,7 +165,15 @@ impl Auth for AuthService {
                     Status::internal("Failed to create provider")
                 })?;
             }
-            None => {}
+            None => {
+                sqlx::query!(r#"insert into drivers (id) values ($1)"#, user)
+                    .execute(self.pool_ref())
+                    .await
+                    .map_err(|err| {
+                        error!("Failed to create driver: {}", err);
+                        Status::internal("Failed to create driver")
+                    })?;
+            }
         }
 
         log::info!("User {} created as {:?}", user, kind);

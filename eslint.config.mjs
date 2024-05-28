@@ -164,6 +164,8 @@ export default tseslint.config(
 			'@typescript-eslint/restrict-template-expressions': 'off',
 			'@typescript-eslint/no-empty-function': 'off',
 			'@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+			'@typescript-eslint/no-misused-promises': 'off',
+			'@typescript-eslint/no-redundant-type-constituents': 'off',
 		},
 	},
 );

@@ -8,7 +8,7 @@ const nextConfig = {
 	images: {
 		unoptimized: true,
 	},
-	assetPrefix: prod ? `http://${'192.168.1.94'}:3000/` : undefined,
+	assetPrefix: !prod ? `http://${'localhost'}:3000/` : undefined,
 };
 
 export default nextConfig;

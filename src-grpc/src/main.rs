@@ -34,8 +34,8 @@ use tonic::transport::Server;
 #[tokio::main]
 async fn main() -> Result<(), StartError> {
     SkuldLogger::new(PathBuf::from("log.txt"))
-        .await
         .unwrap()
+        .with_level(log::LevelFilter::Debug)
         .init()
         .unwrap();
 
@@ -49,7 +49,7 @@ async fn main() -> Result<(), StartError> {
     let auth = AuthServer::new(AuthService::new(Arc::clone(&pool)));
     let jobs = JobsServer::new(JobsService::new(Arc::clone(&pool)));
 
-    info!("Starting server at localhost:50051");
+    info!("Starting server at 127.0.0.1:50051");
 
     let reflection = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(proto::DESCRIPTOR)

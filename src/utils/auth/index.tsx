@@ -1,12 +1,12 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { UserData } from '../reapi/user';
+import { LoginResponse } from '@proto/auth_pb';
 import { useRouter } from 'next/navigation';
 
 export interface Auth {
-	token: UserData | undefined;
-	setToken: (token: UserData) => void;
+	token: LoginResponse | undefined;
+	setToken: (token: LoginResponse) => void;
 	loading: boolean;
 }
 
@@ -17,7 +17,7 @@ export interface AuthProviderProps {
 const AuthContext = createContext(undefined as Auth | undefined);
 
 export function AuthProvider({ children }: AuthProviderProps) {
-	const [token, setToken] = useState<UserData | undefined>(undefined);
+	const [token, setToken] = useState<LoginResponse | undefined>(undefined);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -44,10 +44,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	);
 }
 
-export function ensureToken(auth: Auth): UserData | undefined {
+export function ensureToken(auth: Auth): LoginResponse | undefined {
 	if (auth.loading) return undefined;
 	if (!auth.token) return useRouter().push('/login') as never;
-	if (auth.token.expires < new Date()) return useRouter().push('/login') as never;
+	if (new Date(auth.token.expires) < new Date()) return useRouter().push('/login') as never;
+
 	return auth.token;
 }
 
