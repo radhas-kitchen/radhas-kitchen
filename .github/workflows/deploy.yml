@@ -23,6 +23,11 @@ jobs:
       - name: Setup .env
         run: echo 'DATABASE_URL="${{ secrets.DATABASE_URL }}"' > src-grpc/.env
 
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
       - name: Build release
         run: |
           cd src-grpc
