@@ -18,7 +18,17 @@ jobs:
     steps:
       - id: checkout
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Setup Rust Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            src-grpc/target
+            ~/.cargo
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Setup .env
         run: echo 'DATABASE_URL="${{ secrets.DATABASE_URL }}"' > src-grpc/.env
