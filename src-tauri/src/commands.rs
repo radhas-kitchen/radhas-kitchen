@@ -1,6 +1,5 @@
 use crate::proto::*;
 use log::*;
-use std::error::Error;
 use thiserror::Error;
 
 const URL: &str = "http://localhost:50051";
@@ -17,27 +16,34 @@ pub enum CommandError {
 impl CommandError {
     pub fn message(&self) -> String {
         match self {
-            CommandError::ConnectError(e) => "Failed to connect to server".to_string(),
+            CommandError::ConnectError(_) => "Failed to connect to server".to_string(),
             CommandError::RequestError(e) => e.to_string(),
         }
     }
 }
 
-macro_rules! command_handler {
-    ($fnname:ident ($($arg:ident : $aty:ty),*) -> $ret:ty $inner_fn:block) => {
+macro_rules! command_handler2 {
+    ($serv:ident :: $rpc:ident, $fnn:ident () -> Vec<$ret:ty>) => {
         #[tauri::command]
-        pub async fn $fnname($($arg: $aty),*) -> Result<$ret, String> {
-            async fn inner($($arg: $aty),*) -> Result<$ret, Box<dyn Error>> $inner_fn
+        pub async fn $fnn() -> Result<Vec<$ret>, String> {
+            async fn inner() -> Result<Vec<$ret>, CommandError> {
+                let mut client = $serv::connect(URL).await?;
+                let res = client.$rpc(Empty::default()).await?;
 
-            inner($($arg),*).await.map_err(|e| {
-                error!("{}: {:?}", stringify!($fnname), e);
-                format!("{}", e.message())
-            })
+                let mut res = res.into_inner();
+                let mut vec = vec![];
+
+                while let Some(item) = res.message().await? {
+                    vec.push(item);
+                }
+
+                Ok(vec)
+            }
+
+            inner().await.map_err(|e| e.message().to_string())
         }
     };
-}
 
-macro_rules! command_handler2 {
     ($serv:ident :: $rpc:ident, $fnn:ident ($in:ty)) => {
         #[tauri::command]
         pub async fn $fnn(request: $in) -> Result<(), String> {
@@ -49,6 +55,20 @@ macro_rules! command_handler2 {
             }
 
             inner(request).await.map_err(|e| e.message().to_string())
+        }
+    };
+
+    ($serv:ident :: $rpc:ident, $fnn:ident () -> $ret:ty) => {
+        #[tauri::command]
+        pub async fn $fnn() -> Result<$ret, String> {
+            async fn inner() -> Result<$ret, CommandError> {
+                let mut client = $serv::connect(URL).await?;
+                let res = client.$rpc(Empty::default()).await?;
+
+                Ok(res)
+            }
+
+            inner().await.map_err(|e| e.message().to_string())
         }
     };
 
@@ -66,46 +86,14 @@ macro_rules! command_handler2 {
     };
 }
 
-command_handler2!(AuthClient::login, grpc_login(LoginRequest) -> LoginResponse);
-command_handler2!(AuthClient::create_user, grpc_create_user(CreateUserRequest));
+command_handler2!(AuthClient::login, auth_login(LoginRequest) -> LoginResponse);
+command_handler2!(AuthClient::create_user, auth_create_user(CreateUserRequest));
 
-// command_handler!(grpc_login(request: LoginRequest) -> LoginResponse {
-//     let mut client = AuthClient::connect(URL).await?;
-//     let response = client.login(request).await?;
-
-//     Ok(response.into_inner())
-// });
-
-// command_handler!(grpc_create_user(request: CreateUserRequest) -> () {
-//     AuthClient::connect(URL).await?.create_user(request).await?;
-//     Ok(())
-// });
-
-// #[tauri::command]
-// pub async fn grpc_login(request: LoginRequest) -> Result<LoginResponse, String> {
-//     let mut client = AuthClient::connect(URL)
-//         .await
-//         .map_err(|e| format!("{e:?}"))?;
-
-//     let response = client.login(request).await.map_err(|e| e.to_string())?;
-
-//     Ok(response.into_inner().into())
-// }
-
-// #[tauri::command]
-// pub async fn grpc_create_user(request: CreateUserRequest) -> Result<(), String> {
-//     debug!("grpc_create_user: got request: {:?}", request);
-
-//     let mut client = AuthClient::connect(URL)
-//         .await
-//         .map_err(|e| format!("{e:?}"))?;
-
-//     debug!("grpc_create_user: connected to server");
-
-//     client
-//         .create_user(request)
-//         .await
-//         .map_err(|e| e.to_string())?;
-
-//     Ok(())
-// }
+command_handler2!(JobsClient::jobs, jobs_list() -> Vec<Job>);
+command_handler2!(JobsClient::get, jobs_get(JobId) -> Job);
+command_handler2!(JobsClient::post, jobs_post(Authorization));
+command_handler2!(JobsClient::cancel, jobs_cancel(JobUpdateRequest));
+command_handler2!(JobsClient::claim, jobs_claim(JobUpdateRequest));
+command_handler2!(JobsClient::unclaim, jobs_unclaim(JobUpdateRequest));
+command_handler2!(JobsClient::pickup, jobs_pickup(JobUpdateRequest));
+command_handler2!(JobsClient::dropoff, jobs_dropoff(JobUpdateRequest));

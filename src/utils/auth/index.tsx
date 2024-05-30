@@ -1,13 +1,15 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { LoginResponse } from '@proto/auth_pb';
+import { LoginResponse } from '@proto/auth';
 import { useRouter } from 'next/navigation';
 
 export interface Auth {
 	token: LoginResponse | undefined;
-	setToken: (token: LoginResponse) => void;
 	loading: boolean;
+
+	setToken: (token: LoginResponse) => void;
+	logout: () => void;
 }
 
 export interface AuthProviderProps {
@@ -17,19 +19,37 @@ export interface AuthProviderProps {
 const AuthContext = createContext(undefined as Auth | undefined);
 
 export function AuthProvider({ children }: AuthProviderProps) {
-	const [token, setToken] = useState<LoginResponse | undefined>(undefined);
+	const [token, setRawToken] = useState<LoginResponse | undefined>(undefined);
 	const [loading, setLoading] = useState(true);
+	const [isLoggedout, forceLogout] = useState(false);
 
 	useEffect(() => {
-		const lstoken = localStorage.getItem('token');
-		if (lstoken) setToken(JSON.parse(lstoken));
+		if (!loading) return;
+		if (isLoggedout) return;
+
+		const token = localStorage.getItem('token');
+		if (token) setRawToken(JSON.parse(token));
 
 		setLoading(false);
-	}, []);
+	});
+
+	useEffect(() => {
+		if (isLoggedout) localStorage.removeItem('token');
+	}, [isLoggedout]);
 
 	useEffect(() => {
 		if (token) localStorage.setItem('token', JSON.stringify(token));
 	}, [token]);
+
+	const setToken = (token: LoginResponse) => {
+		setRawToken(token);
+		forceLogout(false);
+	};
+
+	const logout = () => {
+		forceLogout(true);
+		setRawToken(undefined);
+	};
 
 	return (
 		<AuthContext.Provider
@@ -37,6 +57,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 				token,
 				setToken,
 				loading,
+				logout,
 			}}
 		>
 			{children}

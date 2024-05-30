@@ -24,6 +24,6 @@ pub trait ToIso8601 {
 
 impl ToIso8601 for PrimitiveDateTime {
     fn to_iso8601(&self) -> String {
-        self.format(&Iso8601::DEFAULT).unwrap()
+        OffsetDateTime::new_utc(self.date(), self.time()).format(&Iso8601::DEFAULT).unwrap()
     }
 }

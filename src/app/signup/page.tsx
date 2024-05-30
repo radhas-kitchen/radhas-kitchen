@@ -6,16 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@components/ui/spinner';
 
-import { useAuth } from '@utils/auth';
-
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+
+import { Auth } from '@proto/auth';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { invoke } from '@tauri-apps/api/core';
 
 const FormSchema = z.object({
 	email: z.string().email(),
@@ -109,7 +108,18 @@ function LoginForm({ submit }: { submit: (data: z.infer<typeof FormSchema>) => v
 									<Select onValueChange={ field.onChange } defaultValue={ field.value }>
 										<FormControl>
 											<SelectTrigger className='bg-zinc-800'>
-												<Input placeholder='Choose an option' { ...field } className='-ml-3' />
+												<Input
+													placeholder='Choose an option'
+													{ ...field }
+													value={ (() => {
+														switch (field.value) {
+															case 'Provider': return 'Restaurant';
+															case 'Driver': return 'Driver';
+															case 'Consumer': return 'Farm';
+														}
+													})() }
+													className='-ml-3'
+												/>
 											</SelectTrigger>
 										</FormControl>
 										<SelectContent>
@@ -151,8 +161,6 @@ function LoginForm({ submit }: { submit: (data: z.infer<typeof FormSchema>) => v
 
 				<div className='flex justify-stretch items-center my-4'>
 					<div className='border-[1px] w-full h-[1px]' />
-					<p className='mx-2 text-nowrap text-zinc-400 text-sm'>have an account?</p>
-					<div className='border-[1px] w-full h-[1px]' />
 				</div>
 
 				<Button asChild className='w-full'>
@@ -183,13 +191,11 @@ export default function Page() {
 		if (data.kind === 'Provider') kind = { Provider: { location: data.address! } };
 		else if (data.kind === 'Consumer') kind = { Consumer: { location: data.address! } };
 
-		await invoke('grpc_create_user', {
-			request: {
-				email: data.email,
-				password: data.password,
-				name: data.name,
-				kind,
-			},
+		await Auth.CreateUser({
+			email: data.email,
+			password: data.password,
+			name: data.name,
+			kind,
 		}).catch((e) => {
 			setError(e);
 			setStatus(FormStatus.Error);

@@ -86,7 +86,6 @@ export default tseslint.config(
 			'@stylistic/object-curly-newline': [
 				'warn',
 				{
-					ObjectExpression: { multiline: true, minProperties: 3 },
 					ObjectPattern: { multiline: true, minProperties: 3 },
 					ImportDeclaration: { multiline: true },
 					ExportDeclaration: { multiline: true, minProperties: 3 },

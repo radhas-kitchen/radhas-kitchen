@@ -34,6 +34,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "rkapi.auth.DataUserConsumer",
             "#[derive(serde::Serialize, serde::Deserialize)]",
         )
+        .type_attribute(
+            "rkapi.auth.Authorization",
+            "#[derive(serde::Serialize, serde::Deserialize)]",
+        )
+        .type_attribute(
+            "rkapi.jobs.Job",
+            "#[derive(serde::Serialize, serde::Deserialize)]",
+        )
+        .type_attribute(
+            "rkapi.jobs.JobStatus",
+            "#[derive(serde::Serialize, serde::Deserialize)]",
+        )
+        .type_attribute(
+            "rkapi.jobs.JobId",
+            "#[derive(serde::Serialize, serde::Deserialize)]",
+        )
+        .type_attribute(
+            "rkapi.jobs.JobUpdateRequest",
+            "#[derive(serde::Serialize, serde::Deserialize)]",
+        )
         .compile(
             &["../proto/auth.proto", "../proto/jobs.proto"],
             &["../proto"],

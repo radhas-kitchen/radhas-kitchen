@@ -78,7 +78,7 @@ impl Auth for AuthService {
 
         Ok(Response::new(LoginResponse {
             token,
-            expires: OffsetDateTime::new_utc(expires.date(), expires.time()).to_string(),
+            expires: expires.to_iso8601(),
             user_id: user.id,
             kind: UserKindResponse::from(user.kind).into(),
         }))

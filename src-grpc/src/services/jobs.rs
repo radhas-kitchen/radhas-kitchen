@@ -117,7 +117,7 @@ impl Jobs for JobsService {
         let Authorization { user_id, .. } = auth;
 
         sqlx::query!(
-            r#"update jobs set status = 'Created', driver = null where id = $1 and driver = $2"#,
+            r#"update jobs set status = 'Created', driver = null where id = $1 and driver = $2 and status = 'Claimed'"#,
             job_id,
             user_id
         )
@@ -143,9 +143,9 @@ impl Jobs for JobsService {
         let Authorization { user_id, .. } = auth;
 
         sqlx::query!(
-            r#"update jobs set driver = $1, status = 'PickedUp', pickedup = now() where id = $2"#,
-            user_id,
-            job_id
+            r#"update jobs set status = 'PickedUp', pickedup = now() where id = $1 and driver = $2 and status = 'Claimed'"#,
+            job_id,
+            user_id
         )
         .execute(self.pool_ref())
         .await
@@ -169,7 +169,7 @@ impl Jobs for JobsService {
         let Authorization { user_id, .. } = auth;
 
         sqlx::query!(
-            r#"update jobs set status = 'DroppedOff', droppedoff = now() where id = $1 and driver = $2"#,
+            r#"update jobs set status = 'DroppedOff', droppedoff = now() where id = $1 and driver = $2 and status = 'PickedUp'"#,
             job_id,
             user_id
         )
@@ -196,7 +196,7 @@ impl Jobs for JobsService {
 
         // TODO: Cancel Time
         sqlx::query!(
-            r#"update jobs set status = 'Cancelled' where id = $1 and status = 'Created' and provider = $2"#,
+            r#"update jobs set status = 'Cancelled' where id = $1 and (status = 'Created' or status = 'Claimed') and provider = $2"#,
             job_id,
             user_id
         )
@@ -211,7 +211,7 @@ impl Jobs for JobsService {
     }
 
     async fn jobs(&self, _: Request<Empty>) -> Result<Response<Self::JobsStream>, Status> {
-        let jobs = sqlx::query!(r#"select id,created,claimed,pickedup,droppedoff,cancelled,status as "status!: JobStatus" from jobs where status != 'DroppedOff'"#)
+        let jobs = sqlx::query!(r#"select id,provider,consumer,driver,created,claimed,pickedup,droppedoff,cancelled,status as "status!: JobStatus" from jobs where (status != 'DroppedOff' or droppedoff >= now() - interval '2 days') and status != 'Cancelled'"#)
             .map(|row| Result::<_, Status>::Ok(Job {
                 id: row.id,
                 created: row.created.into_iso8601(),
@@ -220,6 +220,9 @@ impl Jobs for JobsService {
                 droppedoff: row.droppedoff.map(ToIso8601::into_iso8601),
                 cancelled: row.cancelled.map(ToIso8601::into_iso8601),
                 status: JobStatusResponse::from(row.status).into(),
+                posted_by: row.provider,
+                dropoff_to: row.consumer,
+                claimed_by: row.driver,
             }))
             .fetch_all(self.pool_ref())
             .await
@@ -234,7 +237,7 @@ impl Jobs for JobsService {
     async fn get(&self, request: Request<JobId>) -> Result<Response<Job>, Status> {
         let JobId { job_id } = request.into_inner();
 
-        let job = sqlx::query!(r#"select id,created,claimed,pickedup,droppedoff,cancelled,status as "status!: JobStatus" from jobs where id = $1"#, job_id)
+        let job = sqlx::query!(r#"select id,provider,consumer,driver,created,claimed,pickedup,droppedoff,cancelled,status as "status!: JobStatus" from jobs where id = $1"#, job_id)
             .map(|row| Job {
                 id: row.id,
                 created: row.created.into_iso8601(),
@@ -243,6 +246,9 @@ impl Jobs for JobsService {
                 droppedoff: row.droppedoff.map(ToIso8601::into_iso8601),
                 cancelled: row.cancelled.map(ToIso8601::into_iso8601),
                 status: JobStatusResponse::from(row.status).into(),
+                posted_by: row.provider,
+                dropoff_to: row.consumer,
+                claimed_by: row.driver,
             })
             .fetch_optional(self.pool_ref())
             .await

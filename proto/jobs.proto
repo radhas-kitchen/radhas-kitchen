@@ -32,7 +32,11 @@ message Job {
   optional string droppedoff = 5;
   optional string cancelled = 6;
 
-  JobStatus status = 7;
+  string posted_by = 7;
+  string dropoff_to = 8;
+  optional string claimed_by = 9;
+
+  JobStatus status = 10;
 }
 
 message JobId { string job_id = 1; }

@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { invoke } from '@tauri-apps/api/core';
+import { Auth } from '@proto/auth';
 
 const FormSchema = z.object({
 	email: z.string().email(),
@@ -67,8 +67,6 @@ function LoginForm({ submit }: { submit: (data: z.infer<typeof FormSchema>) => v
 
 				<div className='flex justify-stretch items-center my-4'>
 					<div className='border-[1px] w-full h-[1px]' />
-					<p className='mx-2 text-nowrap text-zinc-400 text-sm'>or</p>
-					<div className='border-[1px] w-full h-[1px]' />
 				</div>
 
 				<Button asChild className='w-full'>
@@ -95,16 +93,11 @@ export default function Page() {
 	const submit = async (data: z.infer<typeof FormSchema>) => {
 		setStatus(FormStatus.Loading);
 
-		await invoke('grpc_login', {
-			request: {
-				email: data.email,
-				password: data.password,
-			},
-		}).then((response) => {
-			auth.setToken(response as any);
+		await Auth.Login({ ...data }).then((response) => {
+			auth.setToken(response);
 			setStatus(FormStatus.Success);
 		}).catch((error) => {
-			setError(error.message);
+			setError(error);
 			setStatus(FormStatus.Error);
 		});
 	};

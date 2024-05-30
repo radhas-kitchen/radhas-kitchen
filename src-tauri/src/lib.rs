@@ -29,8 +29,16 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
-            commands::grpc_login,
-            commands::grpc_create_user
+            commands::auth_login,
+            commands::auth_create_user,
+            commands::jobs_list,
+            commands::jobs_get,
+            commands::jobs_post,
+            commands::jobs_claim,
+            commands::jobs_pickup,
+            commands::jobs_dropoff,
+            commands::jobs_cancel,
+            commands::jobs_unclaim,
         ])
         .setup(|app| {
             #[cfg(debug_assertions)]
