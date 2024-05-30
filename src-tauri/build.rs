@@ -10,6 +10,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .file_descriptor_set_path(PathBuf::from(env::var("OUT_DIR")?).join("proto_descriptor.bin"))
         .include_file("proto.rs")
         .compile_well_known_types(true)
+        .protoc_arg("--experimental_allow_proto3_optional")
         .type_attribute(
             "rkapi.auth.LoginRequest",
             "#[derive(serde::Serialize, serde::Deserialize)]",
