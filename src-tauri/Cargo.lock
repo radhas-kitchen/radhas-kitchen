@@ -3126,6 +3126,7 @@ checksum = "38b58827f4464d87d377d175e90bf58eb00fd8716ff0a62f80356b5e61555d0d"
 [[package]]
 name = "skuld"
 version = "0.1.0"
+source = "git+https://github.com/onlycs/asgard#fac97f1c7b891f1bb647434fb7ecf359203bec50"
 dependencies = [
  "chrono",
  "itertools",
