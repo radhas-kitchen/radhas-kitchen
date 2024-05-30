@@ -2,7 +2,7 @@ use crate::proto::*;
 use log::*;
 use thiserror::Error;
 
-const URL: &str = "http://localhost:50051";
+const URL: &str = "https://api.rk.angad.page:50051";
 
 #[derive(Error, Debug)]
 pub enum CommandError {

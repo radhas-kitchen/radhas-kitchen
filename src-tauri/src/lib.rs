@@ -18,8 +18,12 @@ use log::LevelFilter;
 use skuld::log::SkuldLogger;
 use tauri::Manager;
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
+#[cfg_attr(
+    any(target_os = "android", target_os = "ios"),
+    tauri::mobile_entry_point
+)]
 pub fn run() {
+    #[cfg(debug_assertions)]
     SkuldLogger::new(PathBuf::from("skuld.log"))
         .unwrap()
         .with_level(LevelFilter::Debug)

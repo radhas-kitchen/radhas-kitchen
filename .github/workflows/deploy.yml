@@ -1,0 +1,60 @@
+name: Deploy to Google Artifact Registry
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
+
+jobs:
+  docker-release:
+    name: Release Docker image
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+      - id: checkout
+        name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup .env
+        run: echo 'DATABASE_URL="${{ secrets.DATABASE_URL }}"' > src-grpc/.env
+
+      - name: Build release
+        run: |
+          cd src-grpc
+          cargo build --release
+
+      - id: auth
+        name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}@${{ secrets.PROJECT_ID }}.iam.gserviceaccount.com
+          access_token_lifetime: 300s
+
+      - name: Login to Artifact Registry
+        uses: docker/login-action@v1
+        with:
+          registry: us-west2-docker.pkg.dev
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: Get tag
+        id: get-tag
+        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
+
+      - name: Build and push Docker Image
+        id: docker-push-tagged
+        uses: docker/build-push-action@v2
+        with:
+          context: src-grpc
+          file: src-grpc/Dockerfile
+          push: true
+          tags: |
+            us-west2-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server:${{ steps.get-tag.outputs.short_ref }}
+            us-west2-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server:latest
