@@ -51,7 +51,7 @@ async fn main() -> Result<(), StartError> {
     let health = HealthServer::new(HealthService);
 
     info!(
-        "Starting server at 127.0.0.1:{}",
+        "Starting server at 0.0.0.0:{}",
         std::env::var("PORT").unwrap_or("50051".to_string())
     );
 
@@ -65,7 +65,7 @@ async fn main() -> Result<(), StartError> {
         .add_service(jobs)
         .add_service(health)
         .serve(SocketAddr::new(
-            IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
+            IpAddr::V4(Ipv4Addr::new(0,0,0,0)),
             std::env::var("PORT")
                 .ok()
                 .map(|s| s.parse())
