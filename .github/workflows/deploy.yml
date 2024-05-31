@@ -31,7 +31,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Setup .env
-        run: echo 'DATABASE_URL="${{ secrets.DATABASE_URL }}"' > src-grpc/.env
+        run: echo 'DATABASE_URL = "${{ secrets.DATABASE_URL }}"' > src-grpc/.env
 
       - name: Install protoc
         run: |
@@ -49,7 +49,7 @@ jobs:
         with:
           token_format: access_token
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.SERVICE_ACCOUNT }}@${{ secrets.PROJECT_ID }}.iam.gserviceaccount.com
+          project_id: ${{ secrets.PROJECT_ID }}
           access_token_lifetime: 300s
 
       - name: Login to Artifact Registry
