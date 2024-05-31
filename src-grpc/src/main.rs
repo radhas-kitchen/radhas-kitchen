@@ -49,7 +49,10 @@ async fn main() -> Result<(), StartError> {
     let auth = AuthServer::new(AuthService::new(Arc::clone(&pool)));
     let jobs = JobsServer::new(JobsService::new(Arc::clone(&pool)));
 
-    info!("Starting server at 127.0.0.1:50051");
+    info!(
+        "Starting server at 127.0.0.1:{}",
+        std::env::var("PORT").unwrap_or("50051".to_string())
+    );
 
     let reflection = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(proto::DESCRIPTOR)
@@ -61,7 +64,11 @@ async fn main() -> Result<(), StartError> {
         .add_service(jobs)
         .serve(SocketAddr::new(
             IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
-            50051,
+            std::env::var("PORT")
+                .ok()
+                .map(|s| s.parse())
+                .and_then(Result::ok)
+                .unwrap_or(50051),
         ))
         .await
         .map_err(|err| {

@@ -47,6 +47,9 @@ jobs:
 
       - name: Setup gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
+      
+      - name: Set project
+        run: gcloud config set project ${{ secrets.PROJECT_ID }}
 
       - name: Configure Docker
         run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
@@ -62,6 +65,12 @@ jobs:
           context: src-grpc
           file: src-grpc/Dockerfile
           push: true
-          tags: |
-            us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server/grpc-server:${{ steps.get-tag.outputs.short_ref }}
-            us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server/grpc-server:latest
+          tags: us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server/grpc-server:latest
+
+      - name: Redeploy cloud run
+        run: |
+          gcloud run deploy grpc-server \
+            --image=us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server/grpc-server:latest
+            --allow-unauthenticated
+            --region=us-central1
+            --quiet

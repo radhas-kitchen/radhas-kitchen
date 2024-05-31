@@ -9,7 +9,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .protoc_arg("--experimental_allow_proto3_optional")
         .compile_well_known_types(true)
         .compile(
-            &["../proto/auth.proto", "../proto/jobs.proto"],
+            &["../proto/auth.proto", "../proto/jobs.proto", "../proto/health.proto"],
             &["../proto"],
         )?;
 
