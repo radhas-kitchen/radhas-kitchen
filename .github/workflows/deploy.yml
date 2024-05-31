@@ -24,7 +24,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
-          workspaces: "src-grpc -> src-grpc/target"
+          workspaces: "src-grpc -> target"
 
       - name: Setup .env
         run: echo 'DATABASE_URL = "${{ secrets.DATABASE_URL }}"' > src-grpc/.env
@@ -70,7 +70,7 @@ jobs:
       - name: Redeploy cloud run
         run: |
           gcloud run deploy grpc-server \
-            --image=us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server/grpc-server:latest
-            --allow-unauthenticated
-            --region=us-central1
+            --image=us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server/grpc-server:latest \
+            --allow-unauthenticated \
+            --region=us-central1 \
             --quiet

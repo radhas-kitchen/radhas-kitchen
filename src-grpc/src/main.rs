@@ -21,7 +21,7 @@ mod services;
 
 use error::StartError;
 use prelude::*;
-use services::{auth::AuthService, jobs::JobsService};
+use services::{auth::AuthService, health::HealthService, jobs::JobsService};
 use skuld::log::SkuldLogger;
 use sqlx::postgres::PgPoolOptions;
 use std::{
@@ -48,6 +48,7 @@ async fn main() -> Result<(), StartError> {
 
     let auth = AuthServer::new(AuthService::new(Arc::clone(&pool)));
     let jobs = JobsServer::new(JobsService::new(Arc::clone(&pool)));
+    let health = HealthServer::new(HealthService);
 
     info!(
         "Starting server at 127.0.0.1:{}",
@@ -62,6 +63,7 @@ async fn main() -> Result<(), StartError> {
         .add_service(reflection)
         .add_service(auth)
         .add_service(jobs)
+        .add_service(health)
         .serve(SocketAddr::new(
             IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
             std::env::var("PORT")
