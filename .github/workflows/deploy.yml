@@ -63,5 +63,5 @@ jobs:
           file: src-grpc/Dockerfile
           push: true
           tags: |
-            us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server:${{ steps.get-tag.outputs.short_ref }}
-            us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server:latest
+            us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server/grpc-server:${{ steps.get-tag.outputs.short_ref }}
+            us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server/grpc-server:latest
