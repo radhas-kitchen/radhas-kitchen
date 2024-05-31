@@ -24,6 +24,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
+          workspaces: "src-grpc -> src-grpc/target"
 
       - name: Setup .env
         run: echo 'DATABASE_URL = "${{ secrets.DATABASE_URL }}"' > src-grpc/.env
