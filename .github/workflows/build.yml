@@ -29,6 +29,14 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Setup Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: 'r26d'
+          link-to-sdk: true
+          local-cache: true
+
       - name: Install bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -39,6 +47,8 @@ jobs:
       
       - name: Build app with Tauri CLI
         run: bunx @tauri-apps/cli@next android build --apk
+        env:
+          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
