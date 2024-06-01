@@ -29,11 +29,6 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Setup bun
-        run: |
-          curl -sL https://git.io/bun | bash -s -- -b /usr/local/bin
-          bun install
-
       - name: Install bun
         uses: oven-sh/setup-bun@v1
         with:
