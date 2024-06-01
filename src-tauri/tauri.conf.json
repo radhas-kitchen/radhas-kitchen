@@ -1,6 +1,6 @@
 {
 	"productName": "Radhas Kitchen",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"identifier": "org.radhaskitchen.mobile",
 	"build": {
 		"beforeDevCommand": "bun run next:dev",

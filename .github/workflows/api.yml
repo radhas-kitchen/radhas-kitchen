@@ -1,26 +1,20 @@
-name: Deploy to Google Artifact Registry
+name: Redeploy API
 on:
   push:
     tags:
       - '*'
   workflow_dispatch:
 
-
 jobs:
-  docker-release:
-    name: Release Docker image
+  deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: "read"
-      id-token: "write"
-
     steps:
-      - id: checkout
-        name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Rust Cache
+      - name: Restore build cache
         uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
@@ -34,7 +28,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler
 
-      - name: Build release
+      - name: Compile API
         run: |
           cd src-grpc
           cargo build --release
@@ -45,20 +39,16 @@ jobs:
         with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
 
-      - name: Setup gcloud CLI
+      - name: Install Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v2
       
-      - name: Set project
+      - name: Setup Google Cloud CLI
         run: gcloud config set project ${{ secrets.PROJECT_ID }}
 
       - name: Configure Docker
         run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
-      - name: Get tag
-        id: get-tag
-        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
-
-      - name: Build and push Docker Image
+      - name: Build and push Docker image
         id: docker-push-tagged
         uses: docker/build-push-action@v2
         with:
@@ -67,9 +57,9 @@ jobs:
           push: true
           tags: us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server/grpc-server:latest
 
-      - name: Redeploy cloud run
+      - name: Redeploy Cloud Run service
         run: |
-          gcloud run deploy grpc-server \
+          gcloud run deploy rkapi \
             --image=us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/grpc-server/grpc-server:latest \
             --allow-unauthenticated \
             --region=us-central1 \
