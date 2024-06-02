@@ -14,11 +14,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Get commit hash
+        id: get-hash
+        run: echo "::set-output name=hash::$(git rev-parse HEAD)"
+
       - name: Restore build cache
         uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
           workspaces: "src-tauri -> target"
+
+      - name: Restore NDK and SDK cache
+        id: sdk-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/ndk/
+            /usr/local/lib/android/sdk/platform-tools/
+            /usr/local/lib/android/sdk/emulator/
+            /usr/local/lib/android/sdk/tools/
+          key: ${{ runner.os }}-android-ndk-sdk-${{ steps.get-hash.outputs.hash }}
+          restore-keys: ${{ runner.os }}-android-ndk-sdk-
+          save-always: true
       
       - name: Configure Rust toolchain
         uses: dtolnay/rust-toolchain@v1
@@ -39,9 +56,11 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        if: steps.sdk-cache.outputs.cache-hit != 'true'
 
       - name: Setup Android NDK
         run: sudo ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
+        if: steps.sdk-cache.outputs.cache-hit != 'true'
 
       - name: Install bun
         uses: oven-sh/setup-bun@v1
@@ -51,8 +70,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
       
-      - name: Build app with Tauri CLI
-        run: bunx @tauri-apps/cli@next android build --apk
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli@^2.0.0-beta
+      
+      - name: Build Android App
+        run: cargo tauri android build --apk
         env:
           NDK_HOME: /usr/local/lib/android/sdk/ndk/27.0.11718014
 
