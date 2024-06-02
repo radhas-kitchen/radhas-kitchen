@@ -1,5 +1,3 @@
-#![feature(concat_idents)]
-
 extern crate log;
 extern crate prost;
 extern crate serde;
