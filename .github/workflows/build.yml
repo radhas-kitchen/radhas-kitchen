@@ -47,7 +47,7 @@ jobs:
         run: bun install --frozen-lockfile
       
       - name: Build app with Tauri CLI
-        run: bunx tauri@next android build --apk
+        run: bunx @tauri-apps/cli@next android build --apk
         env:
           NDK_HOME: ${ANDROID_SDK_ROOT}/ndk/21.4.7075529
 
