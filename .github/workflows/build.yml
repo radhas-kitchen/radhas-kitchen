@@ -49,7 +49,7 @@ jobs:
       - name: Build app with Tauri CLI
         run: bunx @tauri-apps/cli@next android build --apk
         env:
-          NDK_HOME: ${ANDROID_HOME}/ndk/27.0.11718014
+          NDK_HOME: /usr/local/lib/android/sdk/ndk/27.0.11718014
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
