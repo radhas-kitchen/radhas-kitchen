@@ -24,6 +24,12 @@ jobs:
           cache-on-failure: true
           workspaces: "src-tauri -> target"
 
+      
+      - name: Give tar root permissions
+        run: |
+          sudo chown root /bin/tar
+          sudo chmod u+s /bin/tar
+
       - name: Restore NDK and SDK cache
         id: sdk-cache
         uses: actions/cache@v4
