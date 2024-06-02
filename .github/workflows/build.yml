@@ -36,7 +36,7 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Setup Android NDK
-        run: sudo ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.4.7075529"
+        run: sudo ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
 
       - name: Install bun
         uses: oven-sh/setup-bun@v1
@@ -49,7 +49,7 @@ jobs:
       - name: Build app with Tauri CLI
         run: bunx @tauri-apps/cli@next android build --apk
         env:
-          NDK_HOME: ${ANDROID_SDK_ROOT}/ndk/21.4.7075529
+          NDK_HOME: ${ANDROID_HOME}/ndk/27.0.11718014
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
