@@ -83,7 +83,7 @@ jobs:
           base64 -d src-tauri/gen/android/key.properties.b64 >> src-tauri/gen/android/key.properties
           base64 -d ~/.android/keystore/keystore-prod.jks.b64 >> ~/.android/keystore/keystore-prod.jks
 
-          sed -i "s/onlycs/runner/g" >> src-tauri/gen/android/key.properties
+          sed -i "s/onlycs/runner/g" src-tauri/gen/android/key.properties
 
       - name: Install bun
         uses: oven-sh/setup-bun@v1
