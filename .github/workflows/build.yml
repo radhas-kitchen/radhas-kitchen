@@ -73,6 +73,14 @@ jobs:
         run: sudo ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
         if: steps.sdk-cache.outputs.cache-hit != 'true'
 
+      - name: Keystore Config
+        run: |
+          mkdir -p ~/.android/keystore/
+          echo ${{ secrets.KEYSTORECFG_B64 }} >> src-tauri/gen/android/key.properties.b64
+          echo ${{ secrets.KEYSTORE_B64 }} >> ~/.android/keystore/keystore-prod.jks.b64
+          base64 -d src-tauri/gen/android/key.properties.b64 >> src-tauri/gen/android/key.properties
+          base64 -d ~/.android/keystore/keystore-prod.jks.b64 >> ~/.android/keystore/keystore-prod.jks
+
       - name: Install bun
         uses: oven-sh/setup-bun@v1
         with:

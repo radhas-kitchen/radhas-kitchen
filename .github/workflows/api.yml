@@ -16,7 +16,7 @@ jobs:
 
       - name: Cache Rust files
 	      uses: actions/cache@v4
-		    with:
+        with:
           files: |
             src-tauri/target/
             ~/.cargo
