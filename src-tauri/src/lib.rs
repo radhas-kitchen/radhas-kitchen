@@ -29,7 +29,7 @@ pub fn run() {
         .unwrap();
 
     #[cfg(all(target_os = "android", not(debug_assertions)))]
-    android_logger::init_once(android_logger::Config::default().with_tag_on_device("{{app.name}}"));
+    android_logger::init_once(android_logger::Config::default().with_tag("{{app.name}}"));
 
     #[cfg(all(target_os = "android", debug_assertions))]
     android_logger::init_once(android_logger::Config::default().with_tag("{{app.name}}"));
