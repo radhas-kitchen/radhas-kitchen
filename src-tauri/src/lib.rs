@@ -28,12 +28,11 @@ pub fn run() {
         .init()
         .unwrap();
 
-    #[cfg(any(targest_os = "android", target_os = "ios"))]
-    android_logger::init_once(
-        android_logger::Config::default()
-            .with_min_level(log::Level::Debug)
-            .with_tag("{{app.name}}"),
-    );
+    #[cfg(all(target_os = "android", not(debug_assertions)))]
+    android_logger::init_once(android_logger::Config::default().with_tag_on_device("{{app.name}}"));
+
+    #[cfg(all(target_os = "android", debug_assertions))]
+    android_logger::init_once(android_logger::Config::default().with_tag("{{app.name}}"));
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
