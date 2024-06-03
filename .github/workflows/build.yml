@@ -18,12 +18,17 @@ jobs:
         id: get-hash
         run: echo "::set-output name=hash::$(git rev-parse HEAD)"
 
-      - name: Restore build cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-          workspaces: "src-tauri -> target"
-
+      - name: Cache Rust files
+	      uses: actions/cache@v4
+		    with:
+          files: |
+            src-tauri/target/
+            ~/.cargo
+          key: ${{ runner.os }}-rust-${{ hashFiles('src-tauri/Cargo.lock') }}-${{ steps.get-hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-rust-${{ hashFiles('src-tauri/Cargo.lock') }}-
+            ${{ runner.os }}-rust-
+          save-always: true
       
       - name: Give tar root permissions
         run: |

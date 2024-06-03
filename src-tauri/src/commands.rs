@@ -2,7 +2,7 @@ use crate::proto::*;
 use log::*;
 use thiserror::Error;
 
-const URL: &str = "https://grpc-server-al5s6ot5na-uc.a.run.app:443";
+const URL: &str = "https://rkapi-al5s6ot5na-uc.a.run.app:443";
 
 #[derive(Error, Debug)]
 pub enum CommandError {

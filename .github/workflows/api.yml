@@ -14,11 +14,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Restore build cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-          workspaces: "src-grpc -> target"
+      - name: Cache Rust files
+	      uses: actions/cache@v4
+		    with:
+          files: |
+            src-tauri/target/
+            ~/.cargo
+          key: ${{ runner.os }}-rust-${{ hashFiles('src-tauri/Cargo.lock') }}-${{ steps.get-hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-rust-${{ hashFiles('src-tauri/Cargo.lock') }}-
+            ${{ runner.os }}-rust-
+          save-always: true
 
       - name: Setup .env
         run: echo 'DATABASE_URL = "${{ secrets.DATABASE_URL }}"' > src-grpc/.env
