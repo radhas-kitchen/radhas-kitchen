@@ -26,6 +26,7 @@ tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 log = { version = "0.4.21", features = ["std"] }
 skuld = { git = "https://github.com/onlycs/asgard" }
 thiserror = { git = "https://github.com/onlycs/thiserror", version = "1.0.58" }
+android_logger = "0.13.3"
 
 [profile.dev]
 opt-level = 0

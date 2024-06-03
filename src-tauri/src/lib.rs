@@ -21,12 +21,19 @@ use tauri::Manager;
     tauri::mobile_entry_point
 )]
 pub fn run() {
-    #[cfg(debug_assertions)]
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     SkuldLogger::new(PathBuf::from("skuld.log"))
         .unwrap()
         .with_level(LevelFilter::Debug)
         .init()
         .unwrap();
+
+    #[cfg(any(targest_os = "android", target_os = "ios"))]
+    android_logger::init_once(
+        android_logger::Config::default()
+            .with_min_level(log::Level::Debug)
+            .with_tag("{{app.name}}"),
+    );
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
